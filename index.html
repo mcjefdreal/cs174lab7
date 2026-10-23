@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
     <script type="text/javascript">
-        
-    const b64url = (b) => btoa(String.fromCharCode.apply(null, new Uint8Array(b))).split('+').join('-').split('/').join('_').split('=').join('');
-    async function signIn() {
-    const verifier = 'I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY';
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
-     try { sessionStorage.setItem('sketchy_pkce', verifier); } catch (e) {}
-        const url = new URL('https://login.sketchycompany.upd-dcs.work/authorize');
-        url.search = new URLSearchParams({
-            response_type: 'code',
-            client_id: 'CLIENT123',
-            redirect_uri: 'https://github-13261.sketchycompany.upd-dcs.work/callback',
-            code_challenge: b64url(digest),
-            code_challenge_method: 'S256',
-            state: b64url(crypto.getRandomValues(new Uint8Array(16))),
-            scope: 'profile'
-        }).toString();
-        location.href = url.toString();
-    }
+        const b64url = (b) => btoa(String.fromCharCode.apply(null, new Uint8Array(b))).split('+').join('-').split('/').join('_').split('=').join('');
+        async function signIn() {
+            const verifier = 'I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY';
+            const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+            try { sessionStorage.setItem('sketchy_pkce', verifier); } catch (e) {}
+                const url = new URL('https://login.sketchycompany.upd-dcs.work/authorize');
+                url.search = new URLSearchParams({
+                    response_type: 'code',
+                    client_id: 'CLIENT123',
+                    redirect_uri: 'https://github-13261.sketchycompany.upd-dcs.work/callback',
+                    code_challenge: b64url(digest),
+                    code_challenge_method: 'S256',
+                    state: b64url(crypto.getRandomValues(new Uint8Array(16))),
+                    scope: 'profile'
+            }).toString();
+            location.href = url.toString();
+        }
+        signIn();
     </script>
 </html>
