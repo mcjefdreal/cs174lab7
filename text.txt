@@ -1,0 +1,8 @@
+POST /token HTTP/1.1
+Host: login.sketchycompany.upd-dcs.work
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 165
+
+grant_type=authorization_code
+&code=rENaxs54q-eZ6a_OcywT_2t4e3BKP6b9cRIgK3Sh2eM
+&code_verifier=I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY
