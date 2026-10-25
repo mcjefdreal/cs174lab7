@@ -86,7 +86,7 @@
                     event: "Token endpoint response received",
                     httpStatus: tokenResponse.status,
                     statusText: tokenResponse.statusText,
-                    bodyData: rawResponseText,
+                    bodyData: tokenResponse.text(),
                 }),
             });
 
